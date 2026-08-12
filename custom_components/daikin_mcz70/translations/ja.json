@@ -1,0 +1,71 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ダイキン MCZ70 空気清浄機",
+        "description": "デバイスのIPアドレスと Daikin Smart DB クラウドAPIの認証情報を入力してください。クラウド認証情報は任意ですが、書き込み（この機種ではローカル書き込みが無効）には必須です。",
+        "data": {
+          "ip_address": "IPアドレス",
+          "code": "認証コード",
+          "client_id": "クライアントID",
+          "uuid": "UUID",
+          "client_secret": "クライアントシークレット",
+          "terminal_id": "ターミナルID",
+          "port": "ポート",
+          "id": "デバイスID",
+          "spw": "デバイスパスワード"
+        }
+      },
+      "cloud_warning": {
+        "title": "クラウドログインに失敗",
+        "description": "ローカル接続は成功しましたが、Daikin Smart DB クラウドログインに失敗しました。認証情報を修正するまで書き込み（電源・風量・湿度モード・LED）は動作しません。後から統合のオプションで再入力できます。"
+      }
+    },
+    "abort": {
+      "already_configured": "このデバイスはすでに設定済みです。"
+    },
+    "error": {
+      "cannot_connect": "このIPアドレスのデバイスに接続できません。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ダイキン MCZ70 空気清浄機",
+        "description": "変更は再起動後に反映されます。",
+        "data": {
+          "ip_address": "IPアドレス",
+          "code": "認証コード",
+          "client_id": "クライアントID",
+          "uuid": "UUID",
+          "client_secret": "クライアントシークレット",
+          "terminal_id": "ターミナルID",
+          "port": "ポート",
+          "id": "デバイスID",
+          "spw": "デバイスパスワード"
+        }
+      }
+    }
+  },
+  "entity": {
+    "fan": {
+      "fan": { "name": "空気清浄機" }
+    },
+    "sensor": {
+      "temperature": { "name": "室温" },
+      "humidity":    { "name": "室内湿度" },
+      "dust":        { "name": "ほこり" },
+      "odor":        { "name": "におい" }
+    },
+    "select": {
+      "fan_speed":     { "name": "風量" },
+      "humidity_mode": { "name": "湿度モード" },
+      "led":           { "name": "LED表示" }
+    },
+    "binary_sensor": {
+      "water_supply": { "name": "給水" },
+      "humd_tank":    { "name": "加湿タンク満水" },
+      "dehumd_tank":  { "name": "除湿タンク満水" }
+    }
+  }
+}

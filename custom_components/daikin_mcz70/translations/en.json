@@ -1,0 +1,71 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Daikin MCZ70 Air Purifier",
+        "description": "Enter the device IP address and Daikin Smart DB cloud API credentials. Cloud credentials are optional but required for writes (local writes are disabled on this device).",
+        "data": {
+          "ip_address": "IP Address",
+          "code": "Authorization code",
+          "client_id": "Client ID",
+          "uuid": "UUID",
+          "client_secret": "Client secret",
+          "terminal_id": "Terminal ID",
+          "port": "Port",
+          "id": "Device ID",
+          "spw": "Device password"
+        }
+      },
+      "cloud_warning": {
+        "title": "Cloud login failed",
+        "description": "Local connection succeeded, but the Daikin Smart DB cloud login failed. Writes (power, fan speed, humidity mode, LED) will not work until the cloud credentials are fixed. You can re-enter them later via the integration options."
+      }
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the device at this IP address."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Daikin MCZ70 Air Purifier",
+        "description": "Changes are applied after a restart.",
+        "data": {
+          "ip_address": "IP Address",
+          "code": "Authorization code",
+          "client_id": "Client ID",
+          "uuid": "UUID",
+          "client_secret": "Client secret",
+          "terminal_id": "Terminal ID",
+          "port": "Port",
+          "id": "Device ID",
+          "spw": "Device password"
+        }
+      }
+    }
+  },
+  "entity": {
+    "fan": {
+      "fan": { "name": "Air Purifier" }
+    },
+    "sensor": {
+      "temperature": { "name": "Temperature" },
+      "humidity":    { "name": "Humidity" },
+      "dust":        { "name": "Dust" },
+      "odor":        { "name": "Odor" }
+    },
+    "select": {
+      "fan_speed":     { "name": "Fan Speed" },
+      "humidity_mode": { "name": "Humidity Mode" },
+      "led":           { "name": "LED Display" }
+    },
+    "binary_sensor": {
+      "water_supply": { "name": "Water Supply" },
+      "humd_tank":    { "name": "Humidifier Tank Full" },
+      "dehumd_tank":  { "name": "Dehumidifier Tank Full" }
+    }
+  }
+}

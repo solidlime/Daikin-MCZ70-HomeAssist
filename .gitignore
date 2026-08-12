@@ -1,0 +1,9 @@
+# reference clones (not part of the component)
+_reference/
+
+# python
+__pycache__/
+*.pyc
+
+# misc
+.DS_Store
