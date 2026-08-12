@@ -13,6 +13,7 @@ CONF_TERMINAL_ID = "terminal_id"
 CONF_PORT = "port"
 CONF_ID = "id"
 CONF_SPW = "spw"
+CONF_APW = "apw"
 
 CLOUD_API_BASE = "https://api.daikinsmartdb.jp"
 

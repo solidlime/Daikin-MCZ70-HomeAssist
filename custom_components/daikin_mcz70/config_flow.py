@@ -10,6 +10,7 @@ from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
+    CONF_APW,
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
     CONF_CODE,
@@ -33,6 +34,7 @@ _CLOUD_FIELDS = (
     CONF_PORT,
     CONF_ID,
     CONF_SPW,
+    CONF_APW,
 )
 
 
@@ -50,6 +52,7 @@ def _schema(defaults: dict | None = None) -> vol.Schema:
             vol.Optional(CONF_PORT, default=d.get(CONF_PORT, "")): str,
             vol.Optional(CONF_ID, default=d.get(CONF_ID, "")): str,
             vol.Optional(CONF_SPW, default=d.get(CONF_SPW, "")): str,
+            vol.Optional(CONF_APW, default=d.get(CONF_APW, "")): str,
         }
     )
 

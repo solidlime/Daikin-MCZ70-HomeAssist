@@ -13,7 +13,8 @@
           "terminal_id": "Terminal ID",
           "port": "Port",
           "id": "Device ID",
-          "spw": "Device password"
+          "spw": "Device password",
+          "apw": "APW (optional)"
         }
       },
       "cloud_warning": {
@@ -42,7 +43,8 @@
           "terminal_id": "Terminal ID",
           "port": "Port",
           "id": "Device ID",
-          "spw": "Device password"
+          "spw": "Device password",
+          "apw": "APW (optional)"
         }
       }
     }

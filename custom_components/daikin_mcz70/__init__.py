@@ -35,6 +35,7 @@ from .const import (
     CONF_PORT,
     CONF_REFRESH_TOKEN,
     CONF_SPW,
+    CONF_APW,
     CONF_TERMINAL_ID,
     CONF_TOKEN_EXPIRY,
     CONF_UUID,
@@ -293,6 +294,8 @@ class CloudAPI:
                 "terminalid": self._conf(CONF_TERMINAL_ID),
                 "port": self._conf(CONF_PORT),
             }
+            if apw := self._conf(CONF_APW):
+                query["apw"] = apw
             self._last_write_ts = time.monotonic()
             try:
                 async with self._session.get(
