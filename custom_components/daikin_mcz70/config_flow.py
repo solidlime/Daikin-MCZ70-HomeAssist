@@ -13,7 +13,6 @@ from .const import (
     CONF_APW,
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
-    CONF_CODE,
     CONF_ID,
     CONF_IP_ADDRESS,
     CONF_PORT,
@@ -31,7 +30,6 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 _CLOUD_FIELDS = (
-    CONF_CODE,
     CONF_CLIENT_ID,
     CONF_UUID,
     CONF_CLIENT_SECRET,
@@ -57,7 +55,6 @@ def _schema(defaults: dict | None = None) -> vol.Schema:
     return vol.Schema(
         {
             vol.Required(CONF_IP_ADDRESS, default=d.get(CONF_IP_ADDRESS, "")): str,
-            vol.Optional(CONF_CODE, default=d.get(CONF_CODE, "")): str,
             vol.Optional(CONF_CLIENT_ID, default=d.get(CONF_CLIENT_ID) or DEFAULT_CLIENT_ID): str,
             vol.Optional(CONF_UUID, default=d.get(CONF_UUID, "")): str,
             vol.Optional(CONF_CLIENT_SECRET, default=d.get(CONF_CLIENT_SECRET) or DEFAULT_CLIENT_SECRET): str,
@@ -105,23 +102,24 @@ class DaikinMcZ70ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return await self.async_step_cloud_warning()
 
     async def _test_cloud(self, data: dict) -> bool:
-        """Try the cloud credentials: refresh with a supplied refresh token,
-        otherwise login with the authorization code. Missing credentials are
-        not an error here (local-only setup is allowed with a warning)."""
+        """Try the cloud credentials with a supplied refresh token.
+
+        The dsioti OAuth2 flow issues PKCE-bound codes that the legacy
+        /premise/dsiot/login endpoint rejects, so a login-with-code path is
+        not offered. Missing credentials are not an error here (local-only
+        setup is allowed with a warning).
+        """
         from . import CloudAPI
 
         cloud = CloudAPI(self.hass, None, async_get_clientsession(self.hass), data)
         try:
             if data.get(CONF_REFRESH_TOKEN):
                 await cloud._refresh()
-            elif all(data.get(field) for field in (CONF_CODE, CONF_CLIENT_ID, CONF_UUID, CONF_CLIENT_SECRET)):
-                await cloud.login()
-            else:
-                return False
+                return True
         except Exception as err:
             _LOGGER.warning("Cloud credential test failed: %s", err)
             return False
-        return True
+        return False
 
     async def async_step_cloud_warning(self, user_input=None):
         """Confirm setup even though cloud login failed (writes will not work)."""
