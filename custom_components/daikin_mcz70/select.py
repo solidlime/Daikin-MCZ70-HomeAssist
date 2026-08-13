@@ -18,8 +18,9 @@ _LOGGER = logging.getLogger(__name__)
 _AIRVOL_TO_LABEL = {"1": "弱", "2": "標準", "3": "高", "5": "最高"}
 _LABEL_TO_AIRVOL = {v: k for k, v in _AIRVOL_TO_LABEL.items()}
 
-# MCZ70 humidity mode: independent of the fan mode (5 = dehumidifying).
-_HUMD_TO_LABEL = {"0": "オフ", "1": "低め", "2": "標準", "3": "高め", "4": "自動", "5": "除湿"}
+# MCZ70 humidity setting (manual "しつど設定"): 1-4 apply while humidifying,
+# independent of the fan mode. 0 and 5 are the operation-mode domain.
+_HUMD_TO_LABEL = {"1": "低め", "2": "標準", "3": "高め", "4": "連続"}
 _LABEL_TO_HUMD = {v: k for k, v in _HUMD_TO_LABEL.items()}
 
 _LED_TO_LABEL = {"0": "点灯", "1": "暗め", "2": "消灯"}
@@ -33,6 +34,7 @@ async def async_setup_entry(
 ) -> None:
     data = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([
+        OperationModeSelect(data["coordinator"], data["cloud"], entry),
         AirvolSelect(data["coordinator"], data["cloud"], entry),
         HumdSelect(data["coordinator"], data["cloud"], entry),
         LedSelect(data["coordinator"], data["cloud"], entry),
@@ -52,6 +54,43 @@ class _BaseSelect(CoordinatorEntity, SelectEntity):
         data = {**current_params(self.coordinator), **patch}
         await self._api.set_control_info(data)
         await self.coordinator.async_request_refresh()
+
+
+class OperationModeSelect(_BaseSelect):
+    """Operation switch of the MCZ70: purification always runs, dehumidify and
+    humidify toggle it. Driven by humd (0 = air purification only,
+    5 = dehumidifying, 1-4 = humidifying at the chosen level)."""
+
+    _attr_translation_key = "operation_mode"
+    _attr_options = ["空気清浄", "除湿空気清浄", "加湿空気清浄"]
+
+    def __init__(self, coordinator, api, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, api, entry, "mode")
+
+    @property
+    def current_option(self) -> str | None:
+        humd = (self.coordinator.data or {}).get("humd")
+        if humd == "0":
+            return "空気清浄"
+        if humd == "5":
+            return "除湿空気清浄"
+        if humd in _HUMD_TO_LABEL:
+            return "加湿空気清浄"
+        return None
+
+    async def async_select_option(self, option: str) -> None:
+        if option == "空気清浄":
+            await self._set({"humd": "0"})
+        elif option == "除湿空気清浄":
+            await self._set({"humd": "5"})
+        elif option == "加湿空気清浄":
+            # Keep the current humidify level, default to 標準 when off.
+            humd = (self.coordinator.data or {}).get("humd")
+            if humd not in _HUMD_TO_LABEL:
+                humd = "2"
+            await self._set({"humd": humd})
+        else:
+            _LOGGER.error("Unknown operation mode option: %s", option)
 
 
 class AirvolSelect(_BaseSelect):
@@ -80,11 +119,20 @@ class AirvolSelect(_BaseSelect):
 
 
 class HumdSelect(_BaseSelect):
+    """Humidity level (manual "しつど設定"). Only meaningful while
+    humidifying (humd 1-4); 0 (off) and 5 (dehumidifying) are operation
+    modes and are handled by OperationModeSelect."""
+
     _attr_translation_key = "humidity_mode"
     _attr_options = list(_HUMD_TO_LABEL.values())
 
     def __init__(self, coordinator, api, entry: ConfigEntry) -> None:
         super().__init__(coordinator, api, entry, "humd")
+
+    @property
+    def available(self) -> bool:
+        humd = (self.coordinator.data or {}).get("humd")
+        return humd in _HUMD_TO_LABEL
 
     @property
     def current_option(self) -> str | None:

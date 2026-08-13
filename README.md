@@ -24,7 +24,7 @@
 | 種別 | 内容 |
 |------|------|
 | ファン | 電源 + プリセット（自動 / 手動 / おまかせ / 節電 / 花粉 / のどはだ / サーキュ） |
-| セレクト | 風量（弱 / 標準 / 高 / 最高）、湿度モード（オフ / 低め / 標準 / 高め / 自動 / **除湿**）、LED表示（点灯 / 暗め / 消灯） |
+| セレクト | 運転モード（空気清浄 / 除湿空気清浄 / 加湿空気清浄）、風量（弱 / 標準 / 高 / 最高）、湿度モード（低め / 標準 / 高め / 連続・加湿運転時のみ）、LED表示（点灯 / 暗め / 消灯） |
 | センサー | 室温 / 室内湿度 / PM2.5 / ほこり / におい |
 | バイナリセンサー | 給水が必要 / 加湿タンク未装着 / 除湿タンク満水（要排水） |
 
@@ -105,7 +105,7 @@ mitmproxy による傍受の基本（PC で `mitmweb` を起動 → スマホの
 ## 技術メモ
 
 - ローカル読み取りエンドポイント: `/common/basic_info`, `/cleaner/get_control_info`, `get_unit_status`, `get_sensor_info`, `get_device_setting`
-- MCZ70 固有: 除湿は `humd=5`（`mode` とは独立）、加湿は `humd=1-3`、`acOpeMode` / `airdir` / `swing` は読み取りのみ
+- MCZ70 固有: 除湿は `humd=5`（`mode` とは独立）、加湿は `humd=1-4`（1=低め / 2=標準 / 3=高め / 4=連続）、`acOpeMode` / `airdir` / `swing` は読み取りのみ
 - クラウド API: トークン交換・リフレッシュは `POST https://prod-dsioti.daikinsmartdb.jp/dsioti/oauth2/token`（リフレッシュは旧 `https://api.daikinsmartdb.jp/premise/dsiot/token` でも動作確認済み）、書き込みは `https://api.daikinsmartdb.jp/cleaner/set_control_info` を GET + Bearer 認証（`id` / `spw` / `terminalid` / `port` 付き）
 
 ## 既知の制限（実機検証結果）

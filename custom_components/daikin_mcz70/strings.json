@@ -62,9 +62,25 @@
       "odor":        { "name": "Odor" }
     },
     "select": {
-      "fan_speed":     { "name": "Fan Speed" },
-      "humidity_mode": { "name": "Humidity Mode" },
-      "led":           { "name": "LED Display" }
+      "fan_speed": { "name": "Fan Speed" },
+      "operation_mode": {
+        "name": "Operation Mode",
+        "options": {
+          "空気清浄": "Air Purification",
+          "除湿空気清浄": "Dehumidifying + Air Purification",
+          "加湿空気清浄": "Humidifying + Air Purification"
+        }
+      },
+      "humidity_mode": {
+        "name": "Humidity Mode",
+        "options": {
+          "低め": "Low",
+          "標準": "Standard",
+          "高め": "High",
+          "連続": "Continuous"
+        }
+      },
+      "led": { "name": "LED Display" }
     },
     "binary_sensor": {
       "water_supply": { "name": "Water Supply" },

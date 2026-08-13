@@ -62,9 +62,25 @@
       "odor":        { "name": "におい" }
     },
     "select": {
-      "fan_speed":     { "name": "風量" },
-      "humidity_mode": { "name": "湿度モード" },
-      "led":           { "name": "LED表示" }
+      "fan_speed": { "name": "風量" },
+      "operation_mode": {
+        "name": "運転モード",
+        "options": {
+          "空気清浄": "空気清浄",
+          "除湿空気清浄": "除湿空気清浄",
+          "加湿空気清浄": "加湿空気清浄"
+        }
+      },
+      "humidity_mode": {
+        "name": "湿度モード",
+        "options": {
+          "低め": "低め",
+          "標準": "標準",
+          "高め": "高め",
+          "連続": "連続"
+        }
+      },
+      "led": { "name": "LED表示" }
     },
     "binary_sensor": {
       "water_supply": { "name": "給水" },
