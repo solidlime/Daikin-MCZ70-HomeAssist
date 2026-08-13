@@ -7,14 +7,15 @@
         "data": {
           "ip_address": "IP Address",
           "code": "Authorization code",
-          "client_id": "Client ID",
+          "client_id": "Client ID (auto-filled, change only if needed)",
           "uuid": "UUID",
-          "client_secret": "Client secret",
+          "client_secret": "Client Secret (auto-filled, change only if needed)",
           "refresh_token": "Refresh Token (optional)",
           "terminal_id": "Terminal ID",
           "port": "Port",
           "id": "Device ID",
           "spw": "Device password",
+          "redirect_uri": "Redirect URI (auto-filled, change only if needed)",
           "apw": "APW (optional)"
         }
       },
@@ -38,14 +39,15 @@
         "data": {
           "ip_address": "IP Address",
           "code": "Authorization code",
-          "client_id": "Client ID",
+          "client_id": "Client ID (auto-filled, change only if needed)",
           "uuid": "UUID",
-          "client_secret": "Client secret",
+          "client_secret": "Client Secret (auto-filled, change only if needed)",
           "refresh_token": "Refresh Token (optional)",
           "terminal_id": "Terminal ID",
           "port": "Port",
           "id": "Device ID",
           "spw": "Device password",
+          "redirect_uri": "Redirect URI (auto-filled, change only if needed)",
           "apw": "APW (optional)"
         }
       }

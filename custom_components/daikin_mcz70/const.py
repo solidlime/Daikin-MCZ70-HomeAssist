@@ -14,6 +14,15 @@ CONF_PORT = "port"
 CONF_ID = "id"
 CONF_SPW = "spw"
 CONF_APW = "apw"
+CONF_REDIRECT_URI = "redirect_uri"
+
+# Public constants embedded in the Daikin Smart APP APK (extractable by
+# anyone via APK analysis; not user-specific secrets). Used as defaults in
+# the config flow so most users do not need to enter them. Overridable in
+# the config form.
+DEFAULT_CLIENT_ID = "i66rposkjbceagakohlncsnus"
+DEFAULT_CLIENT_SECRET = "bp3c3lpt05tnoimqpsq1c73uhegl9vhei0voks58bphlqisjjqd"
+DEFAULT_REDIRECT_URI = "daikinsmartapp://callback"
 
 CLOUD_API_BASE = "https://api.daikinsmartdb.jp"
 

@@ -17,10 +17,14 @@ from .const import (
     CONF_ID,
     CONF_IP_ADDRESS,
     CONF_PORT,
+    CONF_REDIRECT_URI,
     CONF_REFRESH_TOKEN,
     CONF_SPW,
     CONF_TERMINAL_ID,
     CONF_UUID,
+    DEFAULT_CLIENT_ID,
+    DEFAULT_CLIENT_SECRET,
+    DEFAULT_REDIRECT_URI,
     DOMAIN,
 )
 
@@ -37,25 +41,32 @@ _CLOUD_FIELDS = (
     CONF_ID,
     CONF_SPW,
     CONF_APW,
+    CONF_REDIRECT_URI,
 )
 
 
 def _schema(defaults: dict | None = None) -> vol.Schema:
-    """Build the form schema. All cloud fields are optional (writes need them)."""
+    """Build the form schema. All cloud fields are optional (writes need them).
+
+    Client ID / secret / redirect URI fall back to the APK-embedded public
+    defaults for new setups, while values already saved in an entry are kept
+    untouched (defaults only apply when the key is absent).
+    """
     d = defaults or {}
     return vol.Schema(
         {
             vol.Required(CONF_IP_ADDRESS, default=d.get(CONF_IP_ADDRESS, "")): str,
             vol.Optional(CONF_CODE, default=d.get(CONF_CODE, "")): str,
-            vol.Optional(CONF_CLIENT_ID, default=d.get(CONF_CLIENT_ID, "")): str,
+            vol.Optional(CONF_CLIENT_ID, default=d.get(CONF_CLIENT_ID, DEFAULT_CLIENT_ID)): str,
             vol.Optional(CONF_UUID, default=d.get(CONF_UUID, "")): str,
-            vol.Optional(CONF_CLIENT_SECRET, default=d.get(CONF_CLIENT_SECRET, "")): str,
+            vol.Optional(CONF_CLIENT_SECRET, default=d.get(CONF_CLIENT_SECRET, DEFAULT_CLIENT_SECRET)): str,
             vol.Optional(CONF_REFRESH_TOKEN, default=d.get(CONF_REFRESH_TOKEN, "")): str,
             vol.Optional(CONF_TERMINAL_ID, default=d.get(CONF_TERMINAL_ID, "")): str,
             vol.Optional(CONF_PORT, default=d.get(CONF_PORT, "")): str,
             vol.Optional(CONF_ID, default=d.get(CONF_ID, "")): str,
             vol.Optional(CONF_SPW, default=d.get(CONF_SPW, "")): str,
             vol.Optional(CONF_APW, default=d.get(CONF_APW, "")): str,
+            vol.Optional(CONF_REDIRECT_URI, default=d.get(CONF_REDIRECT_URI, DEFAULT_REDIRECT_URI)): str,
         }
     )
 
