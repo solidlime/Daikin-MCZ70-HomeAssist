@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from urllib.parse import unquote
 
 import voluptuous as vol
 
@@ -24,6 +25,7 @@ from .const import (
     DEFAULT_CLIENT_ID,
     DEFAULT_CLIENT_SECRET,
     DEFAULT_REDIRECT_URI,
+    DEFAULT_UUID,
     DOMAIN,
 )
 
@@ -46,17 +48,21 @@ _CLOUD_FIELDS = (
 def _schema(defaults: dict | None = None) -> vol.Schema:
     """Build the form schema. All cloud fields are optional (writes need them).
 
-    Client ID / secret / redirect URI fall back to the APK-embedded public
-    defaults whenever no usable value is saved (key absent or empty string,
-    e.g. entries created without cloud credentials), while custom values
-    already saved in an entry are kept untouched.
+    Client ID / secret / redirect URI / UUID fall back to the APK-embedded
+    public defaults whenever no usable value is saved (key absent or empty
+    string, e.g. entries created without cloud credentials), while custom
+    values already saved in an entry are kept untouched.
+
+    The uuid is not validated by the server (arbitrary values still issue
+    codes), and terminalid may be left empty (an empty value is accepted by
+    set_control_info), so both are effectively optional.
     """
     d = defaults or {}
     return vol.Schema(
         {
             vol.Required(CONF_IP_ADDRESS, default=d.get(CONF_IP_ADDRESS, "")): str,
             vol.Optional(CONF_CLIENT_ID, default=d.get(CONF_CLIENT_ID) or DEFAULT_CLIENT_ID): str,
-            vol.Optional(CONF_UUID, default=d.get(CONF_UUID, "")): str,
+            vol.Optional(CONF_UUID, default=d.get(CONF_UUID) or DEFAULT_UUID): str,
             vol.Optional(CONF_CLIENT_SECRET, default=d.get(CONF_CLIENT_SECRET) or DEFAULT_CLIENT_SECRET): str,
             vol.Optional(CONF_REFRESH_TOKEN, default=d.get(CONF_REFRESH_TOKEN, "")): str,
             vol.Optional(CONF_TERMINAL_ID, default=d.get(CONF_TERMINAL_ID, "")): str,
@@ -94,12 +100,30 @@ class DaikinMcZ70ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(mac)
             self._abort_if_unique_id_configured()
 
+        # id / spw / port are served by basic_info on the LAN, so users do
+        # not need to type them; fill only when left empty (hand-entered
+        # values win, existing entries are unaffected).
+        user_input = self._autofill_from_basic_info(user_input, info)
+
         self._data = user_input
         self._title = info.get("name") or "Daikin MCZ70"
 
         if await self._test_cloud(user_input):
             return self.async_create_entry(title=self._title, data=user_input)
         return await self.async_step_cloud_warning()
+
+    @staticmethod
+    def _autofill_from_basic_info(data: dict, info: dict) -> dict:
+        """Fill id/spw/port from the LAN basic_info when left empty.
+
+        Values may be URL-encoded (e.g. %21 for '!'), so they are unquoted.
+        Keys not present in basic_info stay untouched.
+        """
+        out = dict(data)
+        for key, src in ((CONF_ID, "id"), (CONF_SPW, "pw"), (CONF_PORT, "port")):
+            if not out.get(key) and info.get(src):
+                out[key] = unquote(str(info[src]))
+        return out
 
     async def _test_cloud(self, data: dict) -> bool:
         """Try the cloud credentials with a supplied refresh token.

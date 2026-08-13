@@ -22,6 +22,10 @@ CONF_REDIRECT_URI = "redirect_uri"
 DEFAULT_CLIENT_ID = "i66rposkjbceagakohlncsnus"
 DEFAULT_CLIENT_SECRET = "bp3c3lpt05tnoimqpsq1c73uhegl9vhei0voks58bphlqisjjqd"
 DEFAULT_REDIRECT_URI = "daikinsmartapp://callback"
+# Server does not validate the uuid: real-device testing proved arbitrary
+# values still issue codes (probe_uuid.py). Extracted from the authorize
+# query of the Daikin Smart APP APK; overridable in the config form.
+DEFAULT_UUID = "49ffb6aa-88fe-4fb4-a9aa-63499e130f51"
 
 CLOUD_API_BASE = "https://api.daikinsmartdb.jp"
 
