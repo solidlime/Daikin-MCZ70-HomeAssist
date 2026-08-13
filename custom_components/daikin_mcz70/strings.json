@@ -84,8 +84,7 @@
     },
     "binary_sensor": {
       "water_supply": { "name": "Water Supply" },
-      "humd_tank":    { "name": "Humidifier Tank Removed" },
-      "dehumd_tank":  { "name": "Dehumidifier Tank Full" }
+      "humd_tank":    { "name": "Humidifier Tank Removed" }
     }
   }
 }

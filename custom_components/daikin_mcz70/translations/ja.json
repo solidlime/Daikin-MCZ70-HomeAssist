@@ -84,8 +84,7 @@
     },
     "binary_sensor": {
       "water_supply": { "name": "給水" },
-      "humd_tank":    { "name": "加湿タンク未装着" },
-      "dehumd_tank":  { "name": "除湿タンク満水" }
+      "humd_tank":    { "name": "加湿タンク未装着" }
     }
   }
 }
