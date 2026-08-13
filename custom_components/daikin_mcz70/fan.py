@@ -15,8 +15,9 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-# Device modes 0-5. Dehumidifying (humd=5) is independent of mode and is
-# exposed via the humidity mode select instead of as a preset.
+# Device modes 0-5. The operation mode (acOpeMode: purification/dehumidify/
+# humidify) is independent of the fan mode and is exposed via the operation
+# mode select instead of as a preset.
 _MODE_TO_LABEL = {
     "0": "自動",
     "1": "おまかせ",

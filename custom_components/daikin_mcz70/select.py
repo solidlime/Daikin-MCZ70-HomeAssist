@@ -15,11 +15,13 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-_AIRVOL_TO_LABEL = {"1": "弱", "2": "標準", "3": "高", "5": "最高"}
+# Fan speed (device-tested, FW 3_15_0): 0 = automatic (fan preset 自動),
+# 1-5 manual levels.
+_AIRVOL_TO_LABEL = {"0": "自動", "1": "しずか", "2": "弱", "3": "標準", "4": "高", "5": "ターボ"}
 _LABEL_TO_AIRVOL = {v: k for k, v in _AIRVOL_TO_LABEL.items()}
 
-# MCZ70 humidity setting (manual "しつど設定"): 1-4 apply while humidifying,
-# independent of the fan mode. 0 and 5 are the operation-mode domain.
+# MCZ70 humidity level (manual "しつど設定"): 1-4 apply while humidifying
+# (acOpeMode=2). The operation mode itself is driven by acOpeMode, not humd.
 _HUMD_TO_LABEL = {"1": "低め", "2": "標準", "3": "高め", "4": "連続"}
 _LABEL_TO_HUMD = {v: k for k, v in _HUMD_TO_LABEL.items()}
 
@@ -61,39 +63,37 @@ class _BaseSelect(CoordinatorEntity, SelectEntity):
 
 class OperationModeSelect(_BaseSelect):
     """Operation switch of the MCZ70: purification always runs, dehumidify and
-    humidify toggle it. Driven by humd (0 = air purification only,
-    5 = dehumidifying, 1-4 = humidifying at the chosen level)."""
+    humidify toggle it. Driven by acOpeMode (0 = air purification only,
+    1 = dehumidifying, 2 = humidifying) — device-tested on FW 3.15.0, where
+    the old humd=5 dehumidify signal is no longer acted on."""
 
     _attr_translation_key = "operation_mode"
     _attr_options = ["空気清浄", "除湿空気清浄", "加湿空気清浄"]
+
+    _AC_OPE_MODE = {"空気清浄": "0", "除湿空気清浄": "1", "加湿空気清浄": "2"}
 
     def __init__(self, coordinator, api, entry: ConfigEntry) -> None:
         super().__init__(coordinator, api, entry, "mode")
 
     @property
     def current_option(self) -> str | None:
-        humd = (self.coordinator.data or {}).get("humd")
-        if humd == "0":
+        ac_ope_mode = (self.coordinator.data or {}).get("acOpeMode")
+        if ac_ope_mode == "0":
             return "空気清浄"
-        if humd == "5":
+        if ac_ope_mode == "1":
             return "除湿空気清浄"
-        if humd in _HUMD_TO_LABEL:
+        if ac_ope_mode == "2":
             return "加湿空気清浄"
         return None
 
     async def async_select_option(self, option: str) -> None:
-        if option == "空気清浄":
-            await self._set({"humd": "0"})
-        elif option == "除湿空気清浄":
-            await self._set({"humd": "5"})
-        elif option == "加湿空気清浄":
-            # Keep the current humidify level, default to 標準 when off.
-            humd = (self.coordinator.data or {}).get("humd")
-            if humd not in _HUMD_TO_LABEL:
-                humd = "2"
-            await self._set({"humd": humd})
-        else:
+        ac_ope_mode = self._AC_OPE_MODE.get(option)
+        if ac_ope_mode is None:
             _LOGGER.error("Unknown operation mode option: %s", option)
+            return
+        # acOpeMode is appended to the full-send params; humd is left untouched
+        # (device-tested: an acOpeMode-less set keeps the current operation mode).
+        await self._set({"acOpeMode": ac_ope_mode})
 
 
 class AirvolSelect(_BaseSelect):
@@ -105,8 +105,9 @@ class AirvolSelect(_BaseSelect):
 
     @property
     def available(self) -> bool:
+        # Fan preset 自動 (mode 0) — airvol 0-5 selectable, 0 = automatic.
         d = self.coordinator.data or {}
-        return d.get("mode") == "0" and d.get("airvol", "0") != "0"
+        return d.get("mode") == "0"
 
     @property
     def current_option(self) -> str | None:
@@ -123,8 +124,7 @@ class AirvolSelect(_BaseSelect):
 
 class HumdSelect(_BaseSelect):
     """Humidity level (manual "しつど設定"). Only meaningful while
-    humidifying (humd 1-4); 0 (off) and 5 (dehumidifying) are operation
-    modes and are handled by OperationModeSelect."""
+    humidifying (acOpeMode=2); the level is sent as humd 1-4."""
 
     _attr_translation_key = "humidity_mode"
     _attr_options = list(_HUMD_TO_LABEL.values())
@@ -134,8 +134,9 @@ class HumdSelect(_BaseSelect):
 
     @property
     def available(self) -> bool:
-        humd = (self.coordinator.data or {}).get("humd")
-        return humd in _HUMD_TO_LABEL
+        # Only while humidifying (FW 3.15.0: operation mode is acOpeMode).
+        d = self.coordinator.data or {}
+        return d.get("acOpeMode") == "2"
 
     @property
     def current_option(self) -> str | None:

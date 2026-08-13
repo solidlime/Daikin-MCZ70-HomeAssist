@@ -62,7 +62,17 @@
       "odor":        { "name": "におい" }
     },
     "select": {
-      "fan_speed": { "name": "風量" },
+ "fan_speed": {
+  "name": "風量",
+  "options": {
+   "自動": "自動",
+   "しずか": "しずか",
+   "弱": "弱",
+   "標準": "標準",
+   "高": "高",
+   "ターボ": "ターボ"
+  }
+ },
       "operation_mode": {
         "name": "運転モード",
         "options": {
