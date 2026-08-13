@@ -24,4 +24,5 @@ entities:
   - sensor.daikin_mcz70_dust
   - sensor.daikin_mcz70_odor
   - binary_sensor.daikin_mcz70_water_supply
-  - binary_sensor.daikin_mcz70_humidifier_tank_full
+  - binary_sensor.daikin_mcz70_humidifier_tank_removed
+  - binary_sensor.daikin_mcz70_dehumidifier_tank_full

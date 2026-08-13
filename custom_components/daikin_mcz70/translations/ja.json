@@ -112,8 +112,9 @@
       }
     },
     "binary_sensor": {
-      "water_supply": { "name": "給水" },
-      "humd_tank":    { "name": "加湿タンク未装着" }
+      "water_supply": { "name": "加湿タンク給水" },
+      "humd_tank":    { "name": "加湿タンク未装着" },
+      "dehumidifier_tank_full": { "name": "除湿タンク満水" }
     }
   }
 }

@@ -112,8 +112,9 @@
       }
     },
     "binary_sensor": {
-      "water_supply": { "name": "Water Supply" },
-      "humd_tank":    { "name": "Humidifier Tank Removed" }
+      "water_supply": { "name": "Humidifier Tank Refill" },
+      "humd_tank":    { "name": "Humidifier Tank Removed" },
+      "dehumidifier_tank_full": { "name": "Dehumidifier Tank Full" }
     }
   }
 }
