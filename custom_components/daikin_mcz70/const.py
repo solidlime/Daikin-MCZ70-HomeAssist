@@ -5,7 +5,6 @@ from datetime import timedelta
 DOMAIN = "daikin_mcz70"
 
 CONF_IP_ADDRESS = "ip_address"
-CONF_CODE = "code"
 CONF_CLIENT_ID = "client_id"
 CONF_UUID = "uuid"
 CONF_CLIENT_SECRET = "client_secret"

@@ -29,7 +29,6 @@ from .const import (
     CONF_ACCESS_TOKEN,
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
-    CONF_CODE,
     CONF_ID,
     CONF_IP_ADDRESS,
     CONF_PORT,
@@ -55,7 +54,6 @@ _TOKEN_SAFETY_MARGIN = timedelta(seconds=60)
 _REFRESH_LOOP_RETRY = 300.0
 _REFRESH_LOOP_MAX_WAIT = 3600.0
 
-_LOGIN_URL = f"{CLOUD_API_BASE}/premise/dsiot/login"
 _TOKEN_URL = f"{CLOUD_API_BASE}/premise/dsiot/token"
 
 
@@ -182,8 +180,8 @@ class CloudAPI:
 
     Tokens are persisted in the config entry data via async_update_entry,
     so they survive restarts. A background task refreshes the access token
-    before it expires (expiry - 60s); writes also refresh on demand and
-    re-login with the saved authorization code if a 401 occurs.
+    before it expires (expiry - 60s); writes also refresh on demand.
+    Refresh tokens rotate and are persisted after every refresh.
     """
 
     def __init__(
@@ -229,30 +227,6 @@ class CloudAPI:
         await self._persist_tokens()
         _LOGGER.debug("Cloud tokens updated, access token valid for %ss", expires_in)
 
-    async def login(self) -> None:
-        """Authenticate with an authorization code.
-
-        Note: the current app OAuth flow (dsioti) requires PKCE, so a bare
-        code cannot be exchanged through this legacy endpoint. The
-        refresh-token path is the working primary route; this stays as a
-        fallback that fails loudly and guides the user to re-enter credentials
-        via Options.
-        """
-        body = {
-            "grant_type": "authorization_code",
-            "code": self._conf(CONF_CODE),
-            "client_id": self._conf(CONF_CLIENT_ID),
-            "uuid": self._conf(CONF_UUID),
-            "client_secret": self._conf(CONF_CLIENT_SECRET),
-        }
-        try:
-            async with self._session.post(_LOGIN_URL, json=body, timeout=_WRITE_TIMEOUT) as resp:
-                resp.raise_for_status()
-                tokens = await resp.json()
-        except Exception as err:
-            raise CloudError(f"login failed: {err}") from err
-        await self._apply_tokens(tokens)
-
     async def _refresh(self) -> None:
         if not self._refresh_token:
             raise CloudError("no refresh token available")
@@ -266,7 +240,7 @@ class CloudAPI:
         await self._apply_tokens(tokens)
 
     async def _ensure_token(self) -> None:
-        """Refresh when close to expiry, otherwise login. Caller holds the lock."""
+        """Refresh when close to expiry. Caller holds the lock."""
         now = datetime.now(timezone.utc)
         if self._access_token and self._expiry and now < self._expiry - _TOKEN_SAFETY_MARGIN:
             return
@@ -275,19 +249,19 @@ class CloudAPI:
                 await self._refresh()
                 return
             except Exception as err:
-                _LOGGER.warning("Cloud token refresh failed, trying login: %s", err)
-        try:
-            await self.login()
-        except Exception as err:
-            _LOGGER.error(
-                "Cloud login failed: %s. Re-enter the cloud credentials via "
-                "Settings > Devices > Daikin MCZ70 > Options.",
-                err,
-            )
-            raise
+                _LOGGER.error(
+                    "Cloud token refresh failed: %s. Re-enter the cloud credentials "
+                    "via Settings > Devices > Daikin MCZ70 > Options.",
+                    err,
+                )
+                raise CloudError("cloud token refresh failed") from err
+        raise CloudError(
+            "no cloud refresh token configured. Enter it via "
+            "Settings > Devices > Daikin MCZ70 > Options."
+        )
 
     async def _reauthenticate(self) -> None:
-        """Force token renewal on 401 (refresh, falling back to login)."""
+        """Force token renewal on 401 (refresh only)."""
         self._access_token = None
         await self._ensure_token()
 
