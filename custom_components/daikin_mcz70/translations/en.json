@@ -6,7 +6,6 @@
         "description": "Enter the device IP address and Daikin Smart DB cloud API credentials. Cloud credentials are optional but required for writes (local writes are disabled on this device).",
         "data": {
           "ip_address": "IP Address",
-          "code": "Authorization code",
           "client_id": "Client ID (auto-filled, change only if needed)",
           "uuid": "UUID",
           "client_secret": "Client Secret (auto-filled, change only if needed)",
@@ -38,7 +37,6 @@
         "description": "Changes are applied after a restart.",
         "data": {
           "ip_address": "IP Address",
-          "code": "Authorization code",
           "client_id": "Client ID (auto-filled, change only if needed)",
           "uuid": "UUID",
           "client_secret": "Client Secret (auto-filled, change only if needed)",

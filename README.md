@@ -45,43 +45,35 @@
 
 1. **設定 → デバイスとサービス → 統合を追加 → Daikin MCZ70**
 2. デバイスの IP アドレスを入力（ローカル読み取り用・必須）
-3. クラウド認証情報を入力（書き込み用・下記参照）
-4. ローカル接続に成功すればセットアップ完了。クラウドログインが失敗していても読み取り専用で動作します（警告表示あり）
+3. クラウド認証情報を入力（書き込み用・下記参照）。**Client ID / Client Secret / Redirect URI は自動入力済み**（アプリに埋め込まれた公開定数）——手入力が必要なのは **UUID / Terminal ID / Port / ID / SPW / Refresh Token** の6項目
+4. ローカル接続に成功すればセットアップ完了。クラウド認証が失敗していても読み取り専用で動作します（警告表示あり）
 
 クラウド認証情報は後から **統合のオプション** から再入力できます（反映は再起動後）。
 
-## クラウド認証情報の取得方法（プロキシ傍受）
+## クラウド認証情報の取得方法
 
-Daikin アプリの通信を傍受して取得します。**約10分の作業**です。
+書き込み制御には Daikin アプリの通信傍受で取得した認証情報が必要です。**Client ID / Client Secret / Redirect URI はアプリに埋め込まれた公開定数が自動入力されるため、入力不要**です（変更が必要な場合のみ上書き）。
 
-### 準備（PC）
+必要な6項目と取得元：
 
-```
-pip install mitmproxy
-mitmweb        # Web UI が http://127.0.0.1:8081 で開く
-ipconfig       # 自分の PC の IP を確認
-```
+| 項目 | 取得元 |
+|------|--------|
+| UUID / Terminal ID | アプリをログアウト→再ログインした際の `GET /dsioti/oauth2/authorize` クエリの `uuid` / `client_device_id` |
+| Port / ID / SPW | アプリで設定変更（モード切替など）した際の `GET /cleaner/set_control_info` クエリの `port` / `id` / `spw` |
+| Refresh Token | ログイン成功時の `POST /dsioti/oauth2/auth` の `Location: daikinsmartapp://callback?code=...` から `code` を取得し、トークン交換 API（`POST https://prod-dsioti.daikinsmartdb.jp/dsioti/oauth2/token`、`grant_type=authorization_code` / `code` / `client_id` / `client_secret` / `code_verifier` / `redirect_uri`）で交換して取得 |
 
-### スマホ
+mitmproxy による傍受の基本（PC で `mitmweb` を起動 → スマホの Wi-Fi プロキシを PC の IP:8080 に設定 → `http://mitm.it` から証明書インストール）は [dylannlaw/homebridge-daikin-air-purifier](https://github.com/dylannlaw/homebridge-daikin-air-purifier) の README が参考になります。
 
-1. Wi-Fi 設定 → プロキシ → 手動 → ホスト: PC の IP / ポート: `8080`
-2. ブラウザで `http://mitm.it` → Android/iOS 用証明書をインストール
+⚠️ **Refresh Token の取得は PKCE のため技術的に煩雑です**（`code_verifier` が必要）。取得が難しい場合は作者に問い合わせるのが確実です。
 
-### キャプチャ
-
-1. **Daikin Smart APP をログアウト → 再ログイン**
-2. mitmweb で **`POST /premise/dsiot/login`** のリクエストボディを確認：
-   `code`, `clientId`, `uuid`, `clientSecret` → **config flow の `code` / `client_id` / `uuid` / `client_secret` に入力**
-3. アプリで適当な設定変更（モード切替など）→ **`GET /cleaner/set_control_info`** のクエリパラメータを確認：
-   `terminalid`, `port`, `id`, `spw` → **config flow の `terminal_id` / `port` / `id` / `spw` に入力**
-4. 終わったらプロキシ設定を元に戻すのを忘れずに
+終わったらスマホのプロキシ設定を元に戻すのを忘れずに。
 
 ## トラブルシューティング
 
 | 症状 | 対処 |
 |------|------|
 | 読み取りは動くが書き込みが動かない | クラウド認証情報の誤り。統合のオプションから再入力 → HA 再起動 |
-| ログに `Cloud login failed` | `code` がワンタイムの可能性。もう一度傍受し直して `code` を更新 |
+| ログに `Cloud login failed` | refresh_token が失効している可能性。再取得して統合のオプションから再入力 → HA 再起動 |
 | 書き込みが遅い | クラウド書き込みの 30 秒レート制限による正常動作 |
 | LED セレクトが動かない | `set_device_setting` のクラウドエンドポイントは実機未検証。アプリの通信傍受で `led_dsp` 送信時のクエリを確認してください |
 
@@ -89,7 +81,7 @@ ipconfig       # 自分の PC の IP を確認
 
 - ローカル読み取りエンドポイント: `/common/basic_info`, `/cleaner/get_control_info`, `get_unit_status`, `get_sensor_info`, `get_device_setting`
 - MCZ70 固有: 除湿は `humd=5`（`mode` とは独立）、加湿は `humd=1-3`、`acOpeMode` / `airdir` / `swing` は読み取りのみ
-- クラウド API: `https://api.daikinsmartdb.jp`（`/premise/dsiot/login` → トークン発行 → `/cleaner/set_control_info` を GET + Bearer 認証）
+- クラウド API: トークン交換・リフレッシュは `POST https://prod-dsioti.daikinsmartdb.jp/dsioti/oauth2/token`（リフレッシュは旧 `https://api.daikinsmartdb.jp/premise/dsiot/token` でも動作確認済み）、書き込みは `https://api.daikinsmartdb.jp/cleaner/set_control_info` を GET + Bearer 認証（`id` / `spw` / `terminalid` / `port` 付き）
 
 ## 既知の制限（実機検証結果）
 

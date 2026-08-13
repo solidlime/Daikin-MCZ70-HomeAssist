@@ -6,7 +6,6 @@
         "description": "デバイスのIPアドレスと Daikin Smart DB クラウドAPIの認証情報を入力してください。クラウド認証情報は任意ですが、書き込み（この機種ではローカル書き込みが無効）には必須です。",
         "data": {
           "ip_address": "IPアドレス",
-          "code": "認証コード",
           "client_id": "Client ID（自動入力済み。変更が必要な場合のみ入力）",
           "uuid": "UUID",
           "client_secret": "Client Secret（自動入力済み。変更が必要な場合のみ入力）",
@@ -38,7 +37,6 @@
         "description": "変更は再起動後に反映されます。",
         "data": {
           "ip_address": "IPアドレス",
-          "code": "認証コード",
           "client_id": "Client ID（自動入力済み。変更が必要な場合のみ入力）",
           "uuid": "UUID",
           "client_secret": "Client Secret（自動入力済み。変更が必要な場合のみ入力）",

@@ -230,7 +230,14 @@ class CloudAPI:
         _LOGGER.debug("Cloud tokens updated, access token valid for %ss", expires_in)
 
     async def login(self) -> None:
-        """Authenticate with the saved authorization code."""
+        """Authenticate with an authorization code.
+
+        Note: the current app OAuth flow (dsioti) requires PKCE, so a bare
+        code cannot be exchanged through this legacy endpoint. The
+        refresh-token path is the working primary route; this stays as a
+        fallback that fails loudly and guides the user to re-enter credentials
+        via Options.
+        """
         body = {
             "grant_type": "authorization_code",
             "code": self._conf(CONF_CODE),
