@@ -214,7 +214,9 @@ class CloudAPI:
         data[CONF_ACCESS_TOKEN] = self._access_token
         data[CONF_REFRESH_TOKEN] = self._refresh_token
         data[CONF_TOKEN_EXPIRY] = self._expiry.isoformat()
-        await self._hass.config_entries.async_update_entry(self._entry, data=data)
+        # async_update_entry is a synchronous @callback function returning bool
+        # (HA >= 2026.1); awaiting it raises "bool object can't be awaited".
+        self._hass.config_entries.async_update_entry(self._entry, data=data)
 
     async def _apply_tokens(self, tokens: dict) -> None:
         access = tokens.get("access_token")
