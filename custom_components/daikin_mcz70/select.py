@@ -97,17 +97,16 @@ class OperationModeSelect(_BaseSelect):
 
 
 class AirvolSelect(_BaseSelect):
+    """Fan speed (manual "風量"). Always operable — the physical air volume
+    button works in every operation mode, and a full-send set (current
+    params + airvol) is applied by the device (device-tested FW 3.15.0;
+    single-parameter sends may be ignored by the server)."""
+
     _attr_translation_key = "fan_speed"
     _attr_options = list(_AIRVOL_TO_LABEL.values())
 
     def __init__(self, coordinator, api, entry: ConfigEntry) -> None:
         super().__init__(coordinator, api, entry, "airvol")
-
-    @property
-    def available(self) -> bool:
-        # Fan preset 自動 (mode 0) — airvol 0-5 selectable, 0 = automatic.
-        d = self.coordinator.data or {}
-        return d.get("mode") == "0"
 
     @property
     def current_option(self) -> str | None:
@@ -123,20 +122,16 @@ class AirvolSelect(_BaseSelect):
 
 
 class HumdSelect(_BaseSelect):
-    """Humidity level (manual "しつど設定"). Only meaningful while
-    humidifying (acOpeMode=2); the level is sent as humd 1-4."""
+    """Humidity level (manual "しつど設定"). Always operable — the physical
+    button works regardless of operation mode; the level is sent as humd
+    1-4 and is applied during the next humidifying run. Sent via full-send
+    (device-tested FW 3.15.0; single-parameter sends may be ignored)."""
 
     _attr_translation_key = "humidity_mode"
     _attr_options = list(_HUMD_TO_LABEL.values())
 
     def __init__(self, coordinator, api, entry: ConfigEntry) -> None:
         super().__init__(coordinator, api, entry, "humd")
-
-    @property
-    def available(self) -> bool:
-        # Only while humidifying (FW 3.15.0: operation mode is acOpeMode).
-        d = self.coordinator.data or {}
-        return d.get("acOpeMode") == "2"
 
     @property
     def current_option(self) -> str | None:
