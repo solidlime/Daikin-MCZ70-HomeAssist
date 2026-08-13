@@ -62,7 +62,19 @@
       "odor":        { "name": "Odor" }
     },
     "select": {
- "fan_speed": {
+      "course": {
+        "name": "Course",
+        "options": {
+          "自動": "Auto",
+          "手動": "Manual",
+          "おまかせ": "Omakase",
+          "節電": "Eco",
+          "花粉": "Pollen",
+          "のどはだ": "Throat Skin",
+          "サーキュ": "Circulate"
+        }
+      },
+      "fan_speed": {
   "name": "Fan Speed",
   "options": {
    "自動": "Auto",

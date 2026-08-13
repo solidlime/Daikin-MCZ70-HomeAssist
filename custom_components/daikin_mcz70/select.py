@@ -1,4 +1,4 @@
-"""Select entities for the Daikin MCZ70 integration (fan speed, humidity mode, LED)."""
+"""Select entities for the Daikin MCZ70 integration (course, operation mode, fan speed, humidity mode, LED)."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import current_params, device_info
 from .const import DOMAIN
+from .fan import _LABEL_TO_MODE, _MODE_TO_LABEL, _PRESET_MODES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ async def async_setup_entry(
 ) -> None:
     data = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([
+        CourseSelect(data["coordinator"], data["cloud"], entry),
         OperationModeSelect(data["coordinator"], data["cloud"], entry),
         AirvolSelect(data["coordinator"], data["cloud"], entry),
         HumdSelect(data["coordinator"], data["cloud"], entry),
@@ -59,6 +61,35 @@ class _BaseSelect(CoordinatorEntity, SelectEntity):
         data = {**current_params(self.coordinator), **patch}
         await self._api.set_control_info(data)
         await self.coordinator.async_request_refresh()
+
+
+class CourseSelect(_BaseSelect):
+    """Fan course (mode 0-5) as a select, so it can be changed from an
+    entities card. Mirrors the fan entity's presets (labels imported from
+    fan.py to keep a single source of truth). 手動 is mode 0 with a manual
+    airvol, so it reports the same current_option as 自動 — same as the fan."""
+
+    _attr_translation_key = "course"
+    _attr_options = list(_PRESET_MODES)
+
+    def __init__(self, coordinator, api, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, api, entry, "course")
+
+    @property
+    def current_option(self) -> str | None:
+        mode = (self.coordinator.data or {}).get("mode")
+        return _MODE_TO_LABEL.get(mode or "", None)
+
+    async def async_select_option(self, option: str) -> None:
+        mode = _LABEL_TO_MODE.get(option)
+        if mode is None:
+            _LOGGER.error("Unknown course option: %s", option)
+            return
+        patch = {"mode": mode}
+        if option == "自動":
+            # Same as the fan preset: airvol=0 makes the fan speed automatic.
+            patch["airvol"] = "0"
+        await self._set(patch)
 
 
 class OperationModeSelect(_BaseSelect):

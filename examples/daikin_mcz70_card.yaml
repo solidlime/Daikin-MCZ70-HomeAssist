@@ -13,6 +13,7 @@ title: Daikin MCZ70
 show_header_toggle: true
 entities:
   - fan.daikin_mcz70_air_purifier
+  - select.daikin_mcz70_course
   - select.daikin_mcz70_operation_mode
   - select.daikin_mcz70_fan_speed
   - select.daikin_mcz70_humidity_mode
