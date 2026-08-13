@@ -23,7 +23,10 @@ _LABEL_TO_AIRVOL = {v: k for k, v in _AIRVOL_TO_LABEL.items()}
 _HUMD_TO_LABEL = {"1": "低め", "2": "標準", "3": "高め", "4": "連続"}
 _LABEL_TO_HUMD = {v: k for k, v in _HUMD_TO_LABEL.items()}
 
-_LED_TO_LABEL = {"0": "点灯", "1": "暗め", "2": "消灯"}
+# MCZ704A LED (device-tested, FW 3_15_0): Bright = led_dsp "-" (the device
+# reports "-" when the "brighten" button is pressed; sending 0 is ignored by
+# the cloud server even though it answers ret=OK). 1 = dim, 2 = off.
+_LED_TO_LABEL = {"-": "明", "1": "暗め", "2": "消灯"}
 _LABEL_TO_LED = {v: k for k, v in _LED_TO_LABEL.items()}
 
 
@@ -148,6 +151,13 @@ class HumdSelect(_BaseSelect):
 
 
 class LedSelect(_BaseSelect):
+    """LED brightness: 明 = led_dsp "-", 暗め = 1, 消灯 = 2.
+
+    Device-tested (FW 3_15_0): the device reports "-" for bright and the
+    cloud server ignores led_dsp=0 (returns ret=OK but nothing changes),
+    so 0 is intentionally not offered.
+    """
+
     _attr_translation_key = "led"
     _attr_options = list(_LED_TO_LABEL.values())
     _attr_icon = "mdi:led-variant-on"
@@ -165,5 +175,6 @@ class LedSelect(_BaseSelect):
         if val is None:
             _LOGGER.error("Unknown led option: %s", option)
             return
+        # Send the raw value as-is ("-" included): cloud accepts it (ret=OK).
         await self._api.set_device_setting({"led_dsp": val})
         await self.coordinator.async_request_refresh()

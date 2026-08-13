@@ -80,7 +80,14 @@
           "連続": "Continuous"
         }
       },
-      "led": { "name": "LED Display" }
+      "led": {
+        "name": "LED Display",
+        "options": {
+          "明": "Bright",
+          "暗め": "Dim",
+          "消灯": "Off"
+        }
+      }
     },
     "binary_sensor": {
       "water_supply": { "name": "Water Supply" },
