@@ -1,0 +1,26 @@
+# Daikin MCZ70 - ダッシュボードカード（全エンティティ）
+#
+# 使い方:
+#   HA のダッシュボードで「カードを追加」→「コードエディタ」を選び、
+#   この YAML を貼り付けて保存する。
+#
+# 注意:
+#   - entity_id は環境によって異なる場合があります。
+#     実際の entity_id は「設定 → デバイスとサービス → Daikin MCZ70」で確認してください。
+#   - operation_mode をリネームしている場合、entity_id も変わります。
+type: entities
+title: Daikin MCZ70
+show_header_toggle: true
+entities:
+  - fan.daikin_mcz70_air_purifier
+  - select.daikin_mcz70_operation_mode
+  - select.daikin_mcz70_fan_speed
+  - select.daikin_mcz70_humidity_mode
+  - select.daikin_mcz70_led_display
+  - sensor.daikin_mcz70_temperature
+  - sensor.daikin_mcz70_humidity
+  - sensor.daikin_mcz70_pm2_5
+  - sensor.daikin_mcz70_dust
+  - sensor.daikin_mcz70_odor
+  - binary_sensor.daikin_mcz70_water_supply
+  - binary_sensor.daikin_mcz70_humidifier_tank_full
