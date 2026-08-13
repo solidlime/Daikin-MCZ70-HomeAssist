@@ -17,6 +17,7 @@ from .const import (
     CONF_ID,
     CONF_IP_ADDRESS,
     CONF_PORT,
+    CONF_REFRESH_TOKEN,
     CONF_SPW,
     CONF_TERMINAL_ID,
     CONF_UUID,
@@ -30,6 +31,7 @@ _CLOUD_FIELDS = (
     CONF_CLIENT_ID,
     CONF_UUID,
     CONF_CLIENT_SECRET,
+    CONF_REFRESH_TOKEN,
     CONF_TERMINAL_ID,
     CONF_PORT,
     CONF_ID,
@@ -48,6 +50,7 @@ def _schema(defaults: dict | None = None) -> vol.Schema:
             vol.Optional(CONF_CLIENT_ID, default=d.get(CONF_CLIENT_ID, "")): str,
             vol.Optional(CONF_UUID, default=d.get(CONF_UUID, "")): str,
             vol.Optional(CONF_CLIENT_SECRET, default=d.get(CONF_CLIENT_SECRET, "")): str,
+            vol.Optional(CONF_REFRESH_TOKEN, default=d.get(CONF_REFRESH_TOKEN, "")): str,
             vol.Optional(CONF_TERMINAL_ID, default=d.get(CONF_TERMINAL_ID, "")): str,
             vol.Optional(CONF_PORT, default=d.get(CONF_PORT, "")): str,
             vol.Optional(CONF_ID, default=d.get(CONF_ID, "")): str,
@@ -90,16 +93,21 @@ class DaikinMcZ70ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return await self.async_step_cloud_warning()
 
     async def _test_cloud(self, data: dict) -> bool:
-        """Try a cloud login. Missing credentials are not an error here."""
-        if not all(data.get(field) for field in (CONF_CODE, CONF_CLIENT_ID, CONF_UUID, CONF_CLIENT_SECRET)):
-            return False
+        """Try the cloud credentials: refresh with a supplied refresh token,
+        otherwise login with the authorization code. Missing credentials are
+        not an error here (local-only setup is allowed with a warning)."""
         from . import CloudAPI
 
         cloud = CloudAPI(self.hass, None, async_get_clientsession(self.hass), data)
         try:
-            await cloud.login()
+            if data.get(CONF_REFRESH_TOKEN):
+                await cloud._refresh()
+            elif all(data.get(field) for field in (CONF_CODE, CONF_CLIENT_ID, CONF_UUID, CONF_CLIENT_SECRET)):
+                await cloud.login()
+            else:
+                return False
         except Exception as err:
-            _LOGGER.warning("Cloud login test failed: %s", err)
+            _LOGGER.warning("Cloud credential test failed: %s", err)
             return False
         return True
 
