@@ -7,3 +7,6 @@ __pycache__/
 
 # misc
 .DS_Store
+
+# 認証情報の一時ファイル（コミット禁止）
+_tmp_*
