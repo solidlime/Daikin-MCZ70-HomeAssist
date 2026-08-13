@@ -171,7 +171,7 @@ class LocalAPI:
                 _LOGGER.error("Failed to fetch %s: %s", ep, err)
                 continue
             response.update(_parse_key_value(text))
-        response.setdefault("led_dsp", "0")
+        response.setdefault("led_dsp", "-")
         return response
 
 
