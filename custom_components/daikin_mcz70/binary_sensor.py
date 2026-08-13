@@ -56,6 +56,11 @@ class HumdTankSensor(_BaseBinarySensor):
     def __init__(self, coordinator, entry: ConfigEntry) -> None:
         super().__init__(coordinator, entry, "humd_tank")
 
+    @property
+    def is_on(self) -> bool:
+        # 0 = 加湿タンク未装着（実機検証: タンクを外すと 1→0）
+        return (self.coordinator.data or {}).get(self._field) == "0"
+
 
 class DehumdTankSensor(_BaseBinarySensor):
     _attr_translation_key = "dehumd_tank"
@@ -63,3 +68,8 @@ class DehumdTankSensor(_BaseBinarySensor):
 
     def __init__(self, coordinator, entry: ConfigEntry) -> None:
         super().__init__(coordinator, entry, "dehumd_tank")
+
+    @property
+    def is_on(self) -> bool:
+        # 0 = 満水 or タンク未装着（実機検証: 満水時0 / 空+装着時1 / 外し時0）
+        return (self.coordinator.data or {}).get(self._field) == "0"
